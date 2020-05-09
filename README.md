@@ -4,7 +4,7 @@ This is the pipeline to build [Neptune Networks](https://neptunenetworks.org)' B
 
 This BGP configuration has been built to be agnostic to Neptune Networks and should work for you as well. An example configuration file can be seen in [`config/router.fqdn.example.yml`](config/router.fqdn.example.yml). Simply create a similar file with the relevant options to your network and execute the generation steps at the bottom of this README.
 
-The YAML files in [`config/`](config/) go through a transformation step in which they turn into `bird.conf`, `peers.conf`, and `static.conf` files in the [`out/`](out/) directory.
+The YAML files in [`config/`](config/) go through a transformation step in which they turn into [`bird.conf`](out/router.fqdn.example/bird.conf), [`peers.conf`](out/router.fqdn.example/peers.conf), and [`static.conf`](out/router.fqdn.example/static.conf) files in the [`out/`](out/) directory.
 
 ## BGP Community Support
 
