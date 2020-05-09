@@ -1,0 +1,17 @@
+protocol static {
+  ipv4;
+
+<%- Array(config&.static_routes&.v4).each do |route| -%>
+  route <%= route %>;
+<%- end -%>
+}
+
+protocol static {
+  ipv6;
+
+<%- Array(config&.static_routes&.v6).each do |route| -%>
+  route <%= route %>;
+<%- end -%>
+}
+
+# vim: set ft=bird nofoldenable:

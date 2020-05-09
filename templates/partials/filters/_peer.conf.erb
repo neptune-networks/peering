@@ -1,0 +1,28 @@
+  ipv<%= session.protocol_number %> {
+  <%- if session.irr || session.allowed_prefixes -%>
+    import filter {
+    <%- if session.irr -%>
+      if !(net ~ AS_SET_FOR_<%= session.asn %>_<%= session.protocol_number %>) then
+        reject "prefix is not in IRR AS SET <%= session.irr %> - REJECTING ", net;
+
+    <%- end -%>
+    <%- if session.allowed_prefixes&.public_send(session.protocol) -%>
+      if !(net ~ PREFIX_WHITELIST_FOR_<%= session.asn %>_<%= session.protocol_number %>) then
+        reject "prefix is not in prefix whitelist - REJECTING ", net;
+
+    <%- end -%>
+      peer_import();
+    };
+
+  <%- end -%>
+    export filter {
+      <%- if session.communities&.export -%>
+        <%- export_communities(session).each do |community| -%>
+      <%= community %>
+        <%- end -%>
+      <%- end -%>
+      add_as_specific_prepends(<%= session.asn %>);
+      handle_as_specific_no_export(<%= session.asn %>);
+      peer_export();
+    };
+  };

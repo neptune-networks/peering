@@ -1,0 +1,37 @@
+<%- bgp_sessions.each do |session| -%>
+  <%- if session.irr || session.allowed_prefixes -%>
+    <%- if session.irr -%>
+define <%= irr_bgpq3_output(session) %>
+    <%- end -%>
+    <%- if session.allowed_prefixes&.public_send(session.protocol) -%>
+define PREFIX_WHITELIST_FOR_<%= session.asn -%>_<%= session.protocol_number -%> = [
+    <%= session.allowed_prefixes.public_send(session.protocol).join(",\n    ") %>
+];
+    <%- end -%>
+
+  <%- end -%>
+protocol bgp <%= session_name(session) %> from <%= session_template_name(session) %> {
+  description "<%= session.description %>";
+  local <%= local_address(session) %> as <%= config.asn %>;
+  neighbor <%= remote_address(session) %> as <%= session.asn %>;
+  <%- if session.md5 -%>
+  password "<%= session.md5 %>";
+  <%- end -%>
+  <%- if session.disabled -%>
+  disabled "{{ session.disabled }}";
+  <%- end -%>
+  <%- if session.route_reflector -%>
+  rr client;
+  <%- end -%>
+  <%- if session.multihop -%>
+  multihop;
+  <%- end -%>
+  <%- if session.overrides_template? -%>
+
+<%= session.custom_import_and_export_template %>
+  <%- end -%>
+}
+
+<%- end -%>
+
+# vim: set ft=bird nofoldenable:

@@ -1,0 +1,198 @@
+# This is a sample configuration for a hypothetical border router running BIRD
+# 2.x. In this example, this border router is connected to DE-CIX NY, has a
+# direct connection to an upstream, exports routes to NLNOG RING's looking
+# glass, has telemetry being exported to pmacctd, and has an iBGP session to a
+# core router.
+#
+# The example network design is as follows:
+#
+#                                    ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+#       ┌──────────────────┐             ┌───────────────────┐
+#       │ NLNOG RING (LG)  │         │   │   Google (Peer)   │ │
+#       │  82.94.230.130   ├────┐      ┌─┤   203.0.113.41    │
+#       │2001:888:2001::130│    │    │ │ │fd00:504:36::3b41:0│ │
+#       └──────────────────┘    │      │ └───────────────────┘
+#       ┌──────────────────┐    │    │ │ ┌───────────────────┐ │
+#       │  GTT (Upstream)  │    │      │ │Acme Inc (Customer)│
+#       │    192.0.2.1     │    │    │ ├─┤   203.0.113.220   │ │
+#       │fd00:169:254:2::2 │    │      │ │fd00:504:36:0:3:2:0│
+#       └─────────────┬────┘    │    │ │ └───────────────────┘ │
+#                     │         │      │              DE-CIX NY
+#                     │         │    └ ┼ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+#                ┌────┴─────────┴──────┴─────────┐
+#                │      BIRD (You are here)      │
+# ┌ ─ ─ ─ ─ ─ ─ ─│         198.51.100.1          │─ ─ ─ ─ ─ ─ ─
+#                │ 2001:db8::200:5eff:fe15:429e  │      AS65536│
+# │              └───────────────┬───────────────┘
+#                      ┌─────────┴────────────┐                │
+# │    ┌───────────────┴───────┐  ┌───────────┴───────────┐
+#      │      BIRD (Core)      │  │  pmacctd (Telemetry)  │    │
+# │    │      169.254.1.1      │  │       127.0.0.1       │
+#      │   fd00:169:254:1::1   │  │                       │    │
+# │    └───────────────────────┘  └───────────────────────┘
+#  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+#
+# This example is meant to exercise as many parts of the configuration as
+# possible. Your network architecture might be much simpler. Feel free to omit
+# anything that isn't necessary for you.
+#
+# Each of the configuration options are explained below:
+
+
+
+# The public Autonomous System Number of the border router that this
+# configuration is running on.
+asn: 65536
+
+# A unique identifer of this router, known as the "router ID". This is often an
+# IP address of the border router, as it's thought to be unique.
+router_id: '198.51.100.1'
+
+# The ISO 3166-1 country code of where the border router is operating. This is
+# used for BGP community support.
+region_id: 840  # USA
+
+# A unique identifer of which physical site of the ASN the border router is
+# operating in. This is used for BGP community support.
+site_id: 1
+
+# The preferred source address of prefixes learned on export from the Kernel.
+# Used in source address selection for outgoing packets. Has to be one of the IP
+# addresses of the router. More information can be found in:
+# https://bird.network.cz/?get_doc&v=20&f=bird-6.html
+preferred_source:
+  v4: '198.51.100.1'
+  v6: '2001:db8::200:5eff:fe15:429e'
+
+# The prefixes being originated by this router
+originations:
+  v4:
+    - '198.51.100.0/24'
+  v6:
+    - '2001:db8::/32'
+
+# The prefixes that will be allowed through filters. Useful for allowing through
+# more specific prefixes of originations (perhaps for customers who have a sub
+# allocation of an origination, and you want them to announce them on their
+# own).
+whitelist:
+  v6:
+    - '2001:db8:fff::/48'
+
+# Prefixes that should never be announced. Often IXP ranges should be placed
+# here to avoid leaking them to the world.
+blacklist:
+  v4:
+    - '203.0.113.0/23+'   # DE-CIX New York in this example
+  v6:
+    - 'fd00:504:36::/64+' # DE-CIX New York in this example
+
+# The RPKI RTR address and port for dropping RPKI invalids.
+rpki:
+  host: 'rpki.fqdn.example'
+  port: 8282
+
+bgp:
+  # Upstreams are BGP sessions that give you a full table and you want to
+  # announce your own originations and customer prefixes to.
+  upstreams:
+    sessions:
+      - description: 'GTT'
+        asn: 3257
+        local:
+          v4: '192.0.2.2'
+          v6: 'fd00:192:0:2::2'
+        # If the upstream has multiple addresses, you can add many items to the
+        # `v4` and `v6` options here.
+        remote:
+          v4: '192.0.2.1'
+          v6: 'fd00:192:0:2::1'
+
+  # Telemetry sessions can be used to track the flow of packets across the
+  # network. In this case, we're using pmacctd as outlined in
+  # https://brooks.sh/2019/11/17/network-flow-analysis-with-prometheus.
+  telemetries:
+    sessions:
+      - description: 'pmacctd'
+        asn: 65536
+        # An alias can be used to create a custom name for the BIRD BGP session.
+        alias: 'pmacctd'
+        # Route reflectors allow you to advertise iBGP learned routes to peers.
+        route_reflector: true
+        local:
+          v4: '127.0.0.1'
+        remote:
+          # A port can be used if BGP needs to be established over something
+          # other than the default of 179.
+          port: 180
+          v4: '127.0.0.2'
+
+  # With a looking glass session, you pass a full table to the looking glass so
+  # that external users can debug paths in your network. We do not accept any
+  # prefixes from looking glasses.
+  looking_glasses:
+    sessions:
+      - description: 'NLNOG RING'
+        asn: 199036
+        # Multihop BGP sessions mean that there are multiple "hops" between this
+        # router and the other BGP peer. In this example, NLNOG RING is
+        # connected to over the internet. There is no direct connection.
+        multihop: true
+        local:
+          v4: '198.51.100.1'
+          v6: '2001:db8::200:5eff:fe15:429e'
+        remote:
+          v4: '82.94.230.130'
+          v6: '2001:888:2001::130'
+
+  # A core router session is just an iBGP session (a BGP session where both
+  # peers share the same ASN).
+  cores:
+    sessions:
+      - description: 'Core Router'
+        asn: 65536
+        alias: 'core1'
+        route_reflector: true
+        local:
+          v4: '169.254.253.1'
+          v6: 'fd00:169:254:253::1'
+        remote:
+          v4: '169.254.253.2'
+          v6: 'fd00:169:254:253::2'
+
+  # A customer session is one in which you pass a full table to and re-announce
+  # any prefixes that you receive from them. IRR and RPKI protections are in
+  # place here on import.
+  customers:
+    defaults:
+      local:
+        v4: '203.0.113.4'
+        v6: 'fd00:504:36::3b4:0'
+    sessions:
+      - description: 'ACME Inc.'
+        asn: 65551
+        # This will determine the IP addresses allowed in IRR records for this
+        # particular record and only allow those addresses from this session.
+        # You'll need to periodically re-create this configuration in order to
+        # keep these IRR records up to date.
+        irr: 'AS65551'
+        # This is a quick way of disabling a BGP session.
+        disabled: true
+        remote:
+          v4: '203.0.113.220'
+          v6: 'fd00:504:36:0:3:2:0'
+
+  peers:
+    defaults:
+      local:
+        v4: '203.0.113.4'
+        v6: 'fd00:504:36::3b4:0'
+    sessions:
+      - description: 'Google'
+        asn: 15169
+        # In some BGP sessions you may be required to use an MD5 password to
+        # authenticate.
+        md5: '912ec803b2c'
+        remote:
+          v4: '203.0.113.41'
+          v6: 'fd00:504:36::3b41:0'

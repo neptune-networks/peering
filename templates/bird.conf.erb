@@ -1,0 +1,764 @@
+# --- Configuration ---
+define ROUTER_ID = <%= config.router_id %>;
+define OUR_AS = <%= config.asn %>;
+define REGION_ID = <%= config.region_id %>;
+define SITE_ID = <%= config.site_id %>;
+
+define ORIGINATED_PREFIXES_4 = [
+  <%= config.originations.v4.join(",\n  ") %>
+];
+
+define ORIGINATED_PREFIXES_6 = [
+  <%= config.originations.v6.join(",\n  ") %>
+];
+
+define OUR_INTERNAL_PREFIXES_4 = [
+  <%= config.originations.v4.map { |p| "#{p}+" }.join(",\n  ") %>
+];
+
+define OUR_INTERNAL_PREFIXES_6 = [
+  <%= config.originations.v6.map { |p| "#{p}+" }.join(",\n  ") %>
+];
+
+<%- if config.blacklist.v4 -%>
+define GLOBAL_BLACKLIST_4 = [
+  <%= config.blacklist.v4.join(",\n  ") %>
+];
+
+<%- end -%>
+<%- if config.blacklist.v6 -%>
+define GLOBAL_BLACKLIST_6 = [
+  <%= config.blacklist.v6.join(",\n  ") %>
+];
+
+<%- end -%>
+<%- if config.whitelist&.v4 -%>
+define GLOBAL_WHITELIST_4 = [
+  <%= config.whitelist.v4.join(",\n  ") %>
+];
+
+<%- end -%>
+<%- if config.whitelist&.v6 -%>
+define GLOBAL_WHITELIST_6 = [
+  <%= config.whitelist.v6.join(",\n  ") %>
+];
+<%- end -%>
+
+# --- Constants ---
+define BOGONS_4 = [
+  0.0.0.0/0,              # Default route
+  0.0.0.0/8{8,32},        # IANA - Local Identification
+  10.0.0.0/8{8,32},       # RFC 1918 - Private Use
+  100.64.0.0/10{10,32},   # RFC 6598 - Shared Address Space
+  127.0.0.0/8{8,32},      # IANA - Loopback
+  169.254.0.0/16{16,32},  # RFC 3927 - Link Local
+  172.16.0.0/12{12,32},   # RFC 1918 - Private Use
+  192.0.2.0/24{24,32},    # RFC 5737 - TEST-NET-1
+  192.88.99.0/24{24,32},  # RFC 3068 - 6to4 prefix
+  192.168.0.0/16{16,32},  # RFC 1918 - Private Use
+  198.18.0.0/15{15,32},   # RFC 2544 - Network Interconnect Device Benchmark Testing
+  198.51.100.0/24{24,32}, # RFC 5737 - TEST-NET-2
+  203.0.113.0/24{24,32},  # RFC 5737 - TEST-NET-3
+  224.0.0.0/3{3,32}       # RFC 5771 - Multcast (formerly Class D)
+];
+
+define BOGONS_6 = [
+  ::/0,                     # Default route
+  ::/8{8,128},              # loopback, unspecified, v4-mapped
+  64:ff9b::/96{96,128},     # RFC 6052 - IPv4-IPv6 Translation
+  100::/8{8,128},           # RFC 6666 - reserved for Discard-Only Address Block
+  200::/7{7,128},           # RFC 4048 - Reserved by IETF
+  400::/6{6,128},           # RFC 4291 - Reserved by IETF
+  800::/5{5,128},           # RFC 4291 - Reserved by IETF
+  1000::/4{4,128},          # RFC 4291 - Reserved by IETF
+  2001::/33{33,128},        # RFC 4380 - Teredo prefix
+  2001:0:8000::/33{33,128}, # RFC 4380 - Teredo prefix
+  2001:2::/48{48,128},      # RFC 5180 - Benchmarking
+  2001:3::/32{32,128},      # RFC 7450 - Automatic Multicast Tunneling
+  2001:10::/28{28,128},     # RFC 4843 - Deprecated ORCHID
+  2001:20::/28{28,128},     # RFC 7343 - ORCHIDv2
+  2001:db8::/32{32,128},    # RFC 3849 - NON-ROUTABLE range to be used for documentation purpose
+  2002::/16{16,128},        # RFC 3068 - 6to4 prefix
+  3ffe::/16{16,128},        # RFC 5156 - used for the 6bone but was returned
+  4000::/3{3,128},          # RFC 4291 - Reserved by IETF
+  5f00::/8{8,128},          # RFC 5156 - used for the 6bone but was returned
+  6000::/3{3,128},          # RFC 4291 - Reserved by IETF
+  8000::/3{3,128},          # RFC 4291 - Reserved by IETF
+  a000::/3{3,128},          # RFC 4291 - Reserved by IETF
+  c000::/3{3,128},          # RFC 4291 - Reserved by IETF
+  e000::/4{4,128},          # RFC 4291 - Reserved by IETF
+  f000::/5{5,128},          # RFC 4291 - Reserved by IETF
+  f800::/6{6,128},          # RFC 4291 - Reserved by IETF
+  fc00::/7{7,128},          # RFC 4193 - Unique Local Unicast
+  fe80::/10{10,128},        # RFC 4291 - Link Local Unicast
+  fec0::/10{10,128},        # RFC 4291 - Reserved by IETF
+  ff00::/8{8,128}           # RFC 4291 - Multicast
+];
+
+define INVALID_ASNS = [
+  0,                      # Reserved. RFC7607
+  23456,                  # AS_TRANS. RFC6793
+  64496..64511,           # Reserved for use in documentation and sample code. RFC5398
+  64512..65534,           # Reserved for Private Use. RFC6996
+  65535,                  # Reserved. RFC7300
+  65536..65551,           # Reserved for use in documentation and sample code. RFC5398
+  65552..131071,          # Reserved.
+  4200000000..4294967294, # Reserved for Private Use. [RFC6996]
+  4294967295              # Reserved. RFC7300
+];
+
+router id ROUTER_ID;
+
+timeformat base         iso long;
+timeformat log          iso long;
+timeformat protocol     iso long;
+timeformat route        iso long;
+
+protocol device {};
+
+protocol direct {
+  ipv4;
+  ipv6;
+}
+
+protocol kernel {
+  scan time 10;
+  ipv4 {
+    export filter {
+      krt_prefsrc = <%= config.preferred_source.v4 %>;
+      accept;
+    };
+  };
+}
+
+protocol kernel {
+  scan time 10;
+  ipv6 {
+    export filter {
+      krt_prefsrc = <%= config.preferred_source.v6 %>;
+      accept;
+    };
+  };
+}
+
+<%- if config.rpki -%>
+# --- RPKI ---
+roa4 table RPKI4;
+roa6 table RPKI6;
+
+protocol rpki {
+  roa4 { table RPKI4; };
+  roa6 { table RPKI6; };
+
+  remote "<%= config.rpki.host %>" port <%= config.rpki.port %>;
+
+  retry keep 90;
+  refresh keep 900;
+  expire keep 172800;
+}
+<%- end -%>
+
+# --- Functions ---
+function prefix_is_bogon() {
+  if net.type = NET_IP4 then
+    if net ~ BOGONS_4 then return true;
+  if net.type = NET_IP6 then
+    if net ~ BOGONS_6 then return true;
+  return false;
+}
+
+function as_path_contains_invalid_asn() {
+  return bgp_path ~ INVALID_ASNS;
+}
+
+function prefix_is_in_global_blacklist() {
+  if net.type = NET_IP4 then
+    if net ~ GLOBAL_BLACKLIST_4 then return true;
+  if net.type = NET_IP6 then
+    if net ~ GLOBAL_BLACKLIST_6 then return true;
+  return false;
+}
+
+function prefix_is_in_global_whitelist() {
+<%- if config.whitelist&.v4 -%>
+  if net.type = NET_IP4 then
+    if net ~ GLOBAL_WHITELIST_4 then return true;
+<%- end -%>
+<%- if config.whitelist&.v6 -%>
+  if net.type = NET_IP6 then
+    if net ~ GLOBAL_WHITELIST_6 then return true;
+<%- end -%>
+  return false;
+}
+
+function is_own_prefix() {
+  if net.type = NET_IP4 then {
+    if net ~ ORIGINATED_PREFIXES_4 then {
+      bgp_large_community.add((OUR_AS, 101, 1));
+      return true;
+    }
+  }
+
+  if net.type = NET_IP6 then {
+    if net ~ ORIGINATED_PREFIXES_6 then {
+      bgp_large_community.add((OUR_AS, 101, 1));
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function is_own_internal_prefix() {
+  if net.type = NET_IP4 then
+    if net ~ OUR_INTERNAL_PREFIXES_4 then return true;
+  if net.type = NET_IP6 then
+    if net ~ OUR_INTERNAL_PREFIXES_6 then return true;
+  return false;
+}
+
+function was_learned_from_peer() {
+  if (OUR_AS, 101, 2) ~ bgp_large_community then return true;
+  return false;
+}
+
+function was_learned_from_private_peer() {
+  if (OUR_AS, 101, 3) ~ bgp_large_community then return true;
+  return false;
+}
+
+function was_learned_from_upstream() {
+  if (OUR_AS, 101, 4) ~ bgp_large_community then return true;
+  return false;
+}
+
+function was_learned_from_customer() {
+  if (OUR_AS, 101, 5) ~ bgp_large_community then return true;
+  return false;
+}
+
+function is_prefix_length_valid(int pref_len_min; int pref_len_max) {
+  if net.len < pref_len_min then return false;
+  if net.len > pref_len_max then return false;
+  return true;
+}
+
+function should_not_export_to_site() {
+  if (OUR_AS, 603, SITE_ID) ~ bgp_large_community then return true;
+  return false;
+}
+
+function should_not_export_to_region() {
+  if (OUR_AS, 603, REGION_ID) ~ bgp_large_community then return true;
+  return false;
+}
+
+function should_not_export_to_peers() {
+  if (OUR_AS, 601, 2) ~ bgp_large_community then return true;
+  return false;
+}
+
+function should_not_export_to_private_peers() {
+  if (OUR_AS, 601, 3) ~ bgp_large_community then return true;
+  return false;
+}
+
+function should_not_export_to_upstreams() {
+  if (OUR_AS, 601, 4) ~ bgp_large_community then return true;
+  return false;
+}
+
+function should_not_export_to_customers() {
+  if (OUR_AS, 601, 5) ~ bgp_large_community then return true;
+  return false;
+}
+
+function add_peer_community() {
+  bgp_large_community.add((OUR_AS, 101, 2));
+}
+
+function add_private_peer_community() {
+  bgp_large_community.add((OUR_AS, 101, 3));
+}
+
+function add_upstream_community() {
+  bgp_large_community.add((OUR_AS, 101, 4));
+}
+
+function add_customer_community() {
+  bgp_large_community.add((OUR_AS, 101, 5));
+}
+
+function add_region_community() {
+  bgp_large_community.add((OUR_AS, 102, REGION_ID));
+}
+
+function add_site_community() {
+  bgp_large_community.add((OUR_AS, 103, SITE_ID));
+}
+
+function add_global_prepends() {
+  if (OUR_AS, 900, 1) ~ bgp_large_community then
+    { bgp_path.prepend(OUR_AS); }
+  if (OUR_AS, 900, 2) ~ bgp_large_community then
+    { bgp_path.prepend(OUR_AS); bgp_path.prepend(OUR_AS); }
+  if (OUR_AS, 900, 3) ~ bgp_large_community then
+    { bgp_path.prepend(OUR_AS); bgp_path.prepend(OUR_AS); bgp_path.prepend(OUR_AS); }
+}
+
+function add_as_specific_prepends(int exporting_asn) {
+  if (OUR_AS, 991, exporting_asn) ~ bgp_large_community then
+    { bgp_path.prepend(OUR_AS); }
+  if (OUR_AS, 992, exporting_asn) ~ bgp_large_community then
+    { bgp_path.prepend(OUR_AS); bgp_path.prepend(OUR_AS); }
+  if (OUR_AS, 993, exporting_asn) ~ bgp_large_community then
+    { bgp_path.prepend(OUR_AS); bgp_path.prepend(OUR_AS); bgp_path.prepend(OUR_AS); }
+}
+
+function handle_as_specific_no_export(int exporting_asn) {
+  if (OUR_AS, 600, exporting_asn) ~ bgp_large_community then
+    reject "NO_EXPORT community in place for specific AS - NOT ANNOUNCING ", net;
+}
+
+function add_rpki_community(string rpki_status) {
+  if rpki_status = "valid" then {
+    bgp_ext_community.add((unknown 0x4300, 0, 0));
+  }
+  if rpki_status = "unknown" then {
+    bgp_ext_community.add((unknown 0x4300, 0, 1));
+  }
+  if rpki_status = "invalid" then {
+    bgp_ext_community.add((unknown 0x4300, 0, 2));
+  }
+}
+
+function perform_rpki_validation() {
+  if net.type = NET_IP4 then {
+    case roa_check(RPKI4) {
+      ROA_VALID: add_rpki_community("valid");
+      ROA_UNKNOWN: add_rpki_community("unknown");
+      ROA_INVALID: add_rpki_community("invalid");
+    }
+  } else {
+    case roa_check(RPKI6) {
+      ROA_VALID: add_rpki_community("valid");
+      ROA_UNKNOWN: add_rpki_community("unknown");
+      ROA_INVALID: add_rpki_community("invalid");
+    }
+  }
+}
+
+function route_is_rpki_invalid() {
+  return (unknown 0x4300, 0, 2) ~ bgp_ext_community;
+}
+
+function honor_graceful_shutdown() {
+  if (65535, 0) ~ bgp_community then {
+    bgp_local_pref = 0;
+  }
+}
+
+# https://tools.ietf.org/html/rfc7454#section-11
+function scrub_communities_in() {
+  bgp_large_community.delete((OUR_AS, 101, 1));         # Learned from peer
+  bgp_large_community.delete((OUR_AS, 101, 2));         # Learned from private peer
+  bgp_large_community.delete((OUR_AS, 101, 3));         # Learned from IXP
+  bgp_large_community.delete((OUR_AS, 101, 4));         # Learned from transit provider
+  bgp_large_community.delete((OUR_AS, 101, 5));         # Learned from customer
+  bgp_large_community.delete((OUR_AS, 102, REGION_ID)); # Learned in region
+  bgp_large_community.delete((OUR_AS, 103, SITE_ID));   # Learned in site
+}
+
+function strip_private_asns() {
+  bgp_path.delete([64512..65534]);
+  bgp_path.delete([4200000000..4294967294]);
+}
+
+# --- Filters (technically functions) ---
+function default_import() {
+  if bgp_path.len > 32 then
+    reject "AS_PATH len [", bgp_path.len ,"] longer than 32 - REJECTING ", net;
+
+  if as_path_contains_invalid_asn() then
+    reject "AS_PATH [", bgp_path ,"] contains invalid ASN - REJECTING ", net;
+
+  if prefix_is_in_global_blacklist() then
+    reject "prefix is in global blacklist - REJECTING ", net;
+
+  if is_own_prefix() then
+    reject "prefix is our own - REJECTING ", net;
+
+  if is_own_internal_prefix() then {
+    if !prefix_is_in_global_whitelist() then
+      reject "prefix is our own and internal - REJECTING ", net;
+  }
+
+  if prefix_is_bogon() then
+    reject "prefix is bogon - REJECTING ", net;
+
+  if net.type = NET_IP4 then
+    if !is_prefix_length_valid(8, 24) then
+      reject "prefix len [", net.len, "] not in 8-24 - REJECTING ", net;
+
+  if net.type = NET_IP6 then
+    if !is_prefix_length_valid(12, 48) then
+      reject "prefix len [", net.len, "] not in 12-48 - REJECTING ", net;
+
+  perform_rpki_validation();
+
+  if route_is_rpki_invalid() then
+    reject "RPKI, route is INVALID - REJECTING ", net;
+
+  add_region_community();
+  add_site_community();
+  honor_graceful_shutdown();
+
+  accept;
+}
+
+function peer_import() {
+  scrub_communities_in();
+  add_peer_community();
+  default_import();
+}
+
+function peer_export() {
+  strip_private_asns();
+  add_global_prepends();
+
+  if is_own_prefix() then accept;
+
+  if route_is_rpki_invalid() then
+    reject "RPKI, route is INVALID - NOT ANNOUNCING ", net;
+
+  if is_own_internal_prefix() then {
+    if !prefix_is_in_global_whitelist() then
+      reject "prefix is our own and internal - NOT ANNOUNCING ", net;
+  }
+
+  if net.type = NET_IP4 then
+    if !is_prefix_length_valid(8, 24) then
+      reject "prefix len [", net.len, "] not in 8-24 - REJECTING ", net;
+
+  if net.type = NET_IP6 then
+    if !is_prefix_length_valid(12, 48) then
+      reject "prefix len [", net.len, "] not in 12-48 - REJECTING ", net;
+
+  if prefix_is_bogon() then
+    reject "prefix is bogon - NOT ANNOUNCING ", net;
+
+  if as_path_contains_invalid_asn() then
+    reject "AS_PATH [", bgp_path ,"] contains invalid ASN - REJECTING ", net;
+
+  if should_not_export_to_site() then
+    reject "NO_EXPORT community in place for site - NOT ANNOUNCING ", net;
+
+  if should_not_export_to_region() then
+    reject "NO_EXPORT community in place for region - NOT ANNOUNCING ", net;
+
+  if should_not_export_to_peers() then
+    reject "NO_EXPORT community in place for peers - NOT ANNOUNCING ", net;
+
+  if prefix_is_in_global_blacklist() then
+    reject "prefix is in global blacklist - REJECTING ", net;
+
+  if was_learned_from_customer() then accept;
+
+  reject;
+}
+
+function upstream_import() {
+  scrub_communities_in();
+  add_upstream_community();
+  default_import();
+}
+
+function upstream_export() {
+  strip_private_asns();
+  add_global_prepends();
+
+  if is_own_prefix() then accept;
+
+  if route_is_rpki_invalid() then
+    reject "RPKI, route is INVALID - NOT ANNOUNCING ", net;
+
+  if is_own_internal_prefix() then {
+    if !prefix_is_in_global_whitelist() then
+      reject "prefix is our own and internal - NOT ANNOUNCING ", net;
+  }
+
+  if net.type = NET_IP4 then
+    if !is_prefix_length_valid(8, 24) then
+      reject "prefix len [", net.len, "] not in 8-24 - REJECTING ", net;
+
+  if net.type = NET_IP6 then
+    if !is_prefix_length_valid(12, 48) then
+      reject "prefix len [", net.len, "] not in 12-48 - REJECTING ", net;
+
+  if prefix_is_bogon() then
+    reject "prefix is bogon - NOT ANNOUNCING ", net;
+
+  if as_path_contains_invalid_asn() then
+    reject "AS_PATH [", bgp_path ,"] contains invalid ASN - REJECTING ", net;
+
+  if should_not_export_to_site() then
+    reject "NO_EXPORT community in place for site - NOT ANNOUNCING ", net;
+
+  if should_not_export_to_region() then
+    reject "NO_EXPORT community in place for region - NOT ANNOUNCING ", net;
+
+  if should_not_export_to_upstreams() then
+    reject "NO_EXPORT community in place for upstreams - NOT ANNOUNCING ", net;
+
+  if prefix_is_in_global_blacklist() then
+    reject "prefix is in global blacklist - REJECTING ", net;
+
+  if was_learned_from_customer() then accept;
+
+  reject;
+}
+
+function customer_import() {
+  scrub_communities_in();
+  add_customer_community();
+  default_import();
+}
+
+function customer_export() {
+  strip_private_asns();
+  add_global_prepends();
+
+  if is_own_prefix() then accept;
+
+  if route_is_rpki_invalid() then
+    reject "RPKI, route is INVALID - NOT ANNOUNCING ", net;
+
+  if is_own_internal_prefix() then {
+    if !prefix_is_in_global_whitelist() then
+      reject "prefix is our own and internal - NOT ANNOUNCING ", net;
+  }
+
+  if net.type = NET_IP4 then
+    if !is_prefix_length_valid(8, 24) then
+      reject "prefix len [", net.len, "] not in 8-24 - REJECTING ", net;
+
+  if net.type = NET_IP6 then
+    if !is_prefix_length_valid(12, 48) then
+      reject "prefix len [", net.len, "] not in 12-48 - REJECTING ", net;
+
+  if prefix_is_bogon() then
+    reject "prefix is bogon - NOT ANNOUNCING ", net;
+
+  if as_path_contains_invalid_asn() then
+    reject "AS_PATH [", bgp_path ,"] contains invalid ASN - REJECTING ", net;
+
+  if should_not_export_to_site() then
+    reject "NO_EXPORT community in place for site - NOT ANNOUNCING ", net;
+
+  if should_not_export_to_region() then
+    reject "NO_EXPORT community in place for region - NOT ANNOUNCING ", net;
+
+  if should_not_export_to_customers() then
+    reject "NO_EXPORT community in place for customers - NOT ANNOUNCING ", net;
+
+  if prefix_is_in_global_blacklist() then
+    reject "prefix is in global blacklist - REJECTING ", net;
+
+  if was_learned_from_peer() then accept;
+  if was_learned_from_private_peer() then accept;
+  if was_learned_from_upstream() then accept;
+  if was_learned_from_customer() then accept;
+
+  reject;
+}
+
+function core_import() {
+  if prefix_is_bogon() then reject;
+
+  if prefix_is_in_global_blacklist() then
+    reject "prefix is in global blacklist - REJECTING ", net;
+
+  honor_graceful_shutdown();
+  accept;
+}
+
+function core_export() {
+  if prefix_is_bogon() then reject;
+
+  if prefix_is_in_global_blacklist() then
+    reject "prefix is in global blacklist - REJECTING ", net;
+
+  if is_own_prefix() then accept;
+  if is_own_internal_prefix() then accept;
+  if was_learned_from_peer() then accept;
+  if was_learned_from_private_peer() then accept;
+  if was_learned_from_upstream() then accept;
+  if was_learned_from_customer() then accept;
+
+  reject;
+}
+
+# --- Templates ---
+template bgp peer4 {
+  hold time 90;
+  keepalive time 30;
+  graceful restart;
+
+  ipv4 {
+    next hop self;
+
+    import keep filtered;
+    import where peer_import();
+    export where peer_export();
+  };
+}
+
+template bgp peer6 {
+  hold time 90;
+  keepalive time 30;
+  graceful restart;
+
+  ipv6 {
+    next hop self;
+
+    import keep filtered;
+    import where peer_import();
+    export where peer_export();
+  };
+}
+
+template bgp customer4 {
+  hold time 90;
+  keepalive time 30;
+  graceful restart;
+
+  ipv4 {
+    next hop self;
+
+    import keep filtered;
+    import where customer_import();
+    export where customer_export();
+  };
+}
+
+template bgp customer6 {
+  hold time 90;
+  keepalive time 30;
+  graceful restart;
+
+  ipv6 {
+    next hop self;
+
+    import keep filtered;
+    import where customer_import();
+    export where customer_export();
+  };
+}
+
+template bgp core4 {
+  hold time 90;
+  keepalive time 30;
+  graceful restart;
+
+  ipv4 {
+    next hop self;
+
+    import keep filtered;
+    import where core_import();
+    export where core_export();
+  };
+}
+
+template bgp core6 {
+  hold time 90;
+  keepalive time 30;
+  graceful restart;
+
+  ipv6 {
+    next hop self;
+
+    import keep filtered;
+    import where core_import();
+    export where core_export();
+  };
+}
+
+template bgp upstream4 {
+  hold time 90;
+  keepalive time 30;
+  graceful restart;
+
+  ipv4 {
+    next hop self;
+
+    import keep filtered;
+    import where upstream_import();
+    export where upstream_export();
+  };
+}
+
+template bgp upstream6 {
+  hold time 90;
+  keepalive time 30;
+  graceful restart;
+
+  ipv6 {
+    next hop self;
+
+    import keep filtered;
+    import where upstream_import();
+    export where upstream_export();
+  };
+}
+
+template bgp lookingglass4 {
+  hold time 90;
+  keepalive time 30;
+  graceful restart;
+
+  ipv4 {
+    next hop self;
+
+    import keep filtered;
+    import filter { reject; };
+    export where customer_export();
+  };
+}
+
+template bgp lookingglass6 {
+  hold time 90;
+  keepalive time 30;
+  graceful restart;
+
+  ipv6 {
+    next hop self;
+
+    import keep filtered;
+    import filter { reject; };
+    export where customer_export();
+  };
+}
+
+template bgp telemetry4 {
+  hold time 90;
+  keepalive time 30;
+  graceful restart;
+  rr client;
+
+  ipv4 {
+    next hop self;
+    import filter { reject; };
+    export filter { accept; };
+  };
+
+  ipv6 {
+    next hop address 127.0.0.1;
+    import filter { reject; };
+    export filter { accept; };
+  };
+}
+
+include "/etc/bird/static.conf";
+include "/etc/bird/peers.conf";
+
+# vim: set ft=bird nofoldenable:
