@@ -4,7 +4,7 @@ This is the pipeline to build [Neptune Networks](https://neptunenetworks.org)' B
 
 This BGP configuration has been built to be agnostic to Neptune Networks and should work for you as well. An example configuration file can be seen in [`config/router.fqdn.example.yml`](config/router.fqdn.example.yml). Simply create a similar file with the relevant options to your network and execute the generation steps at the bottom of this README.
 
-The YAML files in `config/` go through a transformation step in which they turn into `bird.conf`, `peers.conf`, and `static.conf` files in the `out/` directory.
+The YAML files in [`config/`](config/) go through a transformation step in which they turn into `bird.conf`, `peers.conf`, and `static.conf` files in the [`out/`](out/) directory.
 
 ## BGP Community Support
 
@@ -67,7 +67,7 @@ BGP communities which manipulate the routing policy.
 
 ## Usage
 
-Start by creating a new `.yml` file in `config/` with all of the configurations you'll need. You can use [`config/router.fqdn.example.yml`](config/router.fqdn.example.yml) as a reference.
+Start by creating a new `.yml` file in [`config/`](config/) with all of the configurations you'll need. You can use [`config/router.fqdn.example.yml`](config/router.fqdn.example.yml) as a reference.
 
 Once you've tuned your configuration file to your liking, build the docker image locally:
 
@@ -81,7 +81,7 @@ And then generate the configuration:
 script/generate
 ```
 
-This will create a file for each of the templates defined in `/templates` without the `.erb` suffix in the `out/` directory.
+This will create a file for each of the templates defined in [`/templates`](templates/) without the `.erb` suffix in the [`out/`](out/) directory.
 
 If you find that you need to make any adjustments to the templates, simply do so and then re-run the generator.
 
