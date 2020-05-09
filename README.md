@@ -87,7 +87,7 @@ If you find that you need to make any adjustments to the templates, simply do so
 
 ## Staying up to date
 
-If you use this as a GitHub Repository template, you will occassionally want to sync your version of the repostiory with the master one located at neptune-networks/peering. To do this, you can run the following commands:
+If you use this as a [GitHub Repository template](https://github.blog/2019-06-06-generate-new-repositories-with-repository-templates/), you will occassionally want to sync your version of the repository with the master one located at [neptune-networks/peering](https://github.com/neptune-networks/peering). To do this, you can run the following commands:
 
 ```
 git remote add upstream https://github.com/neptune-networks/peering.git
