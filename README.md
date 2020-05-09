@@ -85,6 +85,16 @@ This will create a file for each of the templates defined in [`/templates`](temp
 
 If you find that you need to make any adjustments to the templates, simply do so and then re-run the generator.
 
+## Staying up to date
+
+If you use this as a GitHub Repository template, you will occassionally want to sync your version of the repostiory with the master one located at neptune-networks/peering. To do this, you can run the following commands:
+
+```
+git remote add upstream https://github.com/neptune-networks/peering.git
+git fetch upstream
+git merge upstream/master --allow-unrelated-histories
+```
+
 ## Roadmap
 
 - [ ] Community-based local pref
