@@ -379,9 +379,6 @@ function default_import() {
   if bgp_path.len > 32 then
     reject "AS_PATH len [", bgp_path.len ,"] longer than 32 - REJECTING ", net;
 
-  if as_path_contains_invalid_asn() then
-    reject "AS_PATH [", bgp_path ,"] contains invalid ASN - REJECTING ", net;
-
   if prefix_is_in_global_blacklist() then
     reject "prefix is in global blacklist - REJECTING ", net;
 
