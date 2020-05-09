@@ -2,11 +2,13 @@
 
 This is the pipeline to build Neptune Networks' BGP peering configuration. Neptune uses BIRD `2.0.7` on all of its core customer routers and border routers. We rely on this pipeline to take templates and YAML and turn them into a BIRD configuration.
 
-To get started, take a look at the yaml in `config/`. The yaml files in that directory go through a transformation step and eventually turn into `/out/<router>/bird.conf` files for each router, as well as `/out/<router>/peers.conf` files for their respective peerings. Generation steps can be seen at the bottom of this README.
+This BGP configuration has been built to be agnostic to Neptune Networks and should work for you as well. An example configuration file has been built for you in [`config/router.fqdn.example.yml`](config/router.fqdn.example.yml). Simply create a similar file with the relevant options to your network and execute the generation steps at the bottom of this README.
+
+The YAML files in `config/` go through a transformation step in which they turn into `bird.conf`, `peers.conf`, and `static.conf` files in the `out/` directory.
 
 ## BGP Community Support
 
-Because our ASN is 32 bits, and because we value the ability to add more information, we use [BGP large communities](http://largebgpcommunities.net/). They are inspired by [RFC8195](https://tools.ietf.org/html/rfc8195).
+The BIRD configuration in this repostiory uses [BGP large communities](http://largebgpcommunities.net/) inspired by [RFC8195](https://tools.ietf.org/html/rfc8195).
 
 ### Informational
 
@@ -16,11 +18,11 @@ Informational BGP communities offer insight into Neptune's routing policies.
 
 | Community | Description |
 | --------- | ----------- |
-| `397143:101:1` | Originated by Neptune Networks (AS397143) |
-| `397143:101:2` | Learned from IX |
-| `397143:101:3` | Learned from private peer |
-| `397143:101:4` | Learned from transit provider |
-| `397143:101:5` | Learned from customer |
+| `YOUR_ASN:101:1` | Originated by you |
+| `YOUR_ASN:101:2` | Learned from IX |
+| `YOUR_ASN:101:3` | Learned from private peer |
+| `YOUR_ASN:101:4` | Learned from transit provider |
+| `YOUR_ASN:101:5` | Learned from customer |
 
 #### Region
 
@@ -28,13 +30,13 @@ Octets in the function field are the numeric country identifier defined by ISO 3
 
 | Community | Description |
 | --------- | ----------- |
-| `397143:102:840` | Learned in U.S. |
+| `YOUR_ASN:102:840` | Learned in U.S. |
 
 #### Site
 
 | Community | Description |
 | --------- | ----------- |
-| `397143:103:1` | Learned at NY1 |
+| `YOUR_ASN:103:1` | Learned at NY1 |
 
 ### Actionable
 
@@ -44,24 +46,24 @@ BGP communities which manipulate the routing policy.
 
 | Community | Description |
 | --------- | ----------- |
-| `397143:900:1` | Prepend `397143` once on export to all AS's |
-| `397143:900:2` | Prepend `397143` twice on export to all AS's |
-| `397143:900:3` | Prepend `397143` thrice on export to all AS's |
-| `397143:991:xxxxx` | Prepend `397143` once on export to AS `xxxxx` |
-| `397143:992:xxxxx` | Prepend `397143` once on export to AS `xxxxx` |
-| `397143:993:xxxxx` | Prepend `397143` once on export to AS `xxxxx` |
+| `YOUR_ASN:900:1` | Prepend `YOUR_ASN` once on export to all AS's |
+| `YOUR_ASN:900:2` | Prepend `YOUR_ASN` twice on export to all AS's |
+| `YOUR_ASN:900:3` | Prepend `YOUR_ASN` thrice on export to all AS's |
+| `YOUR_ASN:991:xxxxx` | Prepend `YOUR_ASN` once on export to AS `xxxxx` |
+| `YOUR_ASN:992:xxxxx` | Prepend `YOUR_ASN` once on export to AS `xxxxx` |
+| `YOUR_ASN:993:xxxxx` | Prepend `YOUR_ASN` once on export to AS `xxxxx` |
 
 #### NO_EXPORT
 
 | Community | Description |
 | --------- | ----------- |
-| `397143:600:xxxxx` | Do not export to AS `xxxxx` |
-| `397143:601:2` | Do not export to IX peers |
-| `397143:601:3` | Do not export to private peers |
-| `397143:601:4` | Do not export to transit providers |
-| `397143:601:5` | Do not export to customers |
-| `397143:602:840` | Do not export in U.S. |
-| `397143:603:1` | Do not export in NY1 |
+| `YOUR_ASN:600:xxxxx` | Do not export to AS `xxxxx` |
+| `YOUR_ASN:601:2` | Do not export to IX peers |
+| `YOUR_ASN:601:3` | Do not export to private peers |
+| `YOUR_ASN:601:4` | Do not export to transit providers |
+| `YOUR_ASN:601:5` | Do not export to customers |
+| `YOUR_ASN:602:840` | Do not export in U.S. |
+| `YOUR_ASN:603:1` | Do not export in NY1 |
 
 ## Usage
 
