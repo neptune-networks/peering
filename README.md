@@ -81,7 +81,7 @@ And then generate the configuration:
 script/generate
 ```
 
-This will create a file for each of the templates in `/templates`, without the `.erb` suffix.
+This will create a file for each of the templates defined in `/templates` without the `.erb` suffix in the `out/` directory.
 
 If you find that you need to make any adjustments to the templates, simply do so and then re-run the generator.
 
