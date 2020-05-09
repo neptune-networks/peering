@@ -18,7 +18,7 @@ protocol bgp <%= session_name(session) %> from <%= session_template_name(session
   password "<%= session.md5 %>";
   <%- end -%>
   <%- if session.disabled -%>
-  disabled "{{ session.disabled }}";
+  disabled yes;
   <%- end -%>
   <%- if session.route_reflector -%>
   rr client;
