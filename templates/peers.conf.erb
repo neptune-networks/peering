@@ -1,10 +1,7 @@
 <%- bgp_sessions.each do |session| -%>
   <%- if session.irr || session.allowed_prefixes -%>
-    <%- if session.irr -%>
-      <%- bgpq3_output = irr_bgpq3_output(session) -%>
-      <%- if bgpq3_output != '' -%>
-define <%= bgpq3_output %>
-      <%- end -%>
+    <%- if session.irr && session.bgpq3_output -%>
+define <%= session.bgpq3_output %>
     <%- end -%>
     <%- if session.allowed_prefixes&.public_send(session.protocol) -%>
 define PREFIX_WHITELIST_FOR_<%= session.asn -%>_<%= session.protocol_number -%> = [

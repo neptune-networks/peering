@@ -25,8 +25,6 @@ module Helpers
     end
 
     def local_address(session)
-      protocol = "v#{session.protocol_number}"
-
       session_local_address = session.local
       type_local_address = session&.defaults&.local&.for(session.protocol_number)
       global_local_address = config.defaults&.local&.for(session.protocol_number)

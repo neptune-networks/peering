@@ -39,7 +39,6 @@ module BGP
       @multihop = multihop
       @index = index
 
-
       if communities
         @communities = CommunityCollection.new(communities)
       end
@@ -70,6 +69,23 @@ module BGP
 
     def protocol
       "v#{protocol_number}"
+    end
+
+    def bgpq3_output
+      return @bgpq3_output if defined?(@bgpq3_output)
+
+      case protocol_number
+      when 4
+        output = `bgpq3 -b -A -m 24 -4 -l AS_SET_FOR_#{asn}_4 #{irr}`
+      when 6
+        output = `bgpq3 -b -A -m 48 -6 -l AS_SET_FOR_#{asn}_6 #{irr}`
+      end
+
+      if output != ''
+        @bgpq3_output = output
+      else
+        @bgpq3_output = nil
+      end
     end
   end
 end
