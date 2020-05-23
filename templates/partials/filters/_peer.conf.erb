@@ -1,7 +1,7 @@
   ipv<%= session.protocol_number %> {
   <%- if session.irr || session.allowed_prefixes -%>
     import filter {
-    <%- if session.irr && session.bgpq3_output -%>
+    <%- if session.irr -%>
       if !(net ~ AS_SET_FOR_<%= session.asn %>_<%= session.protocol_number %>) then
         reject "prefix is not in IRR AS SET <%= session.irr %> - REJECTING ", net;
 

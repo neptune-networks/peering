@@ -1,17 +1,21 @@
   ipv<%= session.protocol_number %> {
   <%- if session.irr || session.allowed_prefixes -%>
     import filter {
-    <%- if session.irr -%>
+    <%- if (session.irr && session.bgpq3_output) || session.allowed_prefixes&.public_send(session.protocol) -%>
+      <%- if session.irr && session.bgpq3_output -%>
       if !(net ~ AS_SET_FOR_<%= session.asn %>_<%= session.protocol_number %>) then
         reject "prefix is not in IRR AS SET <%= session.irr %> - REJECTING ", net;
 
-    <%- end -%>
-    <%- if session.allowed_prefixes&.public_send(session.protocol) -%>
+      <%- end -%>
+      <%- if session.allowed_prefixes&.public_send(session.protocol) -%>
       if !(net ~ PREFIX_WHITELIST_FOR_<%= session.asn %>_<%= session.protocol_number %>) then
         reject "prefix is not in prefix whitelist - REJECTING ", net;
 
-    <%- end -%>
+      <%- end -%>
       customer_import();
+    <%- else -%>
+      reject;
+    <%- end -%>
     };
 
   <%- end -%>
