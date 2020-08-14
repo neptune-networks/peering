@@ -4,22 +4,30 @@ define OUR_AS = <%= config.asn %>;
 define REGION_ID = <%= config.region_id %>;
 define SITE_ID = <%= config.site_id %>;
 
+<%- if config.originations.v4 -%>
 define ORIGINATED_PREFIXES_4 = [
   <%= config.originations.v4.join(",\n  ") %>
 ];
 
+<%- end -%>
+<%- if config.originations.v6 -%>
 define ORIGINATED_PREFIXES_6 = [
   <%= config.originations.v6.join(",\n  ") %>
 ];
 
+<%- end -%>
+<%- if config.originations.v4 -%>
 define OUR_INTERNAL_PREFIXES_4 = [
   <%= config.originations.v4.map { |p| "#{p}+" }.join(",\n  ") %>
 ];
 
+<%- end -%>
+<%- if config.originations.v6 -%>
 define OUR_INTERNAL_PREFIXES_6 = [
   <%= config.originations.v6.map { |p| "#{p}+" }.join(",\n  ") %>
 ];
 
+<%- end -%>
 <%- if config.blacklist.v4 -%>
 define GLOBAL_BLACKLIST_4 = [
   <%= config.blacklist.v4.join(",\n  ") %>
