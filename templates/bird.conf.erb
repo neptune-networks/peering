@@ -133,8 +133,12 @@ protocol kernel {
   scan time 10;
   ipv4 {
     export filter {
-      krt_prefsrc = <%= config.preferred_source.v4 %>;
-      accept;
+      if source = RTS_STATIC then {
+        accept;
+      } else {
+        krt_prefsrc = <%= config.preferred_source.v4 %>;
+        accept;
+      }
     };
   };
 }
@@ -143,8 +147,12 @@ protocol kernel {
   scan time 10;
   ipv6 {
     export filter {
-      krt_prefsrc = <%= config.preferred_source.v6 %>;
-      accept;
+      if source = RTS_STATIC then {
+        accept;
+      } else {
+        krt_prefsrc = <%= config.preferred_source.v6 %>;
+        accept;
+      }
     };
   };
 }

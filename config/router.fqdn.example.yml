@@ -87,6 +87,16 @@ blacklist:
   v6:
     - 'fd00:504:36::/64+' # DE-CIX New York in this example
 
+# Define any static routes that you would like to define in BIRD here.
+# If you're originating routes on this BIRD instance that aren't learned
+# elsewhere, you'll need to add "unreachable" static routes in order for them
+# to be originated.
+static_routes:
+  v4:
+    - '198.51.100.0/24 unreachable'
+  v6:
+    - '2001:db8::/32 unreachable'
+
 # The RPKI RTR address and port for dropping RPKI invalids.
 rpki:
   host: 'rpki.fqdn.example'

@@ -1,14 +1,7 @@
 protocol static {
   ipv4;
 
-<%- if config&.originations&.v4 -%>
-  # Originated routes
-  <%- Array(config&.originations&.v4).each do |route| -%>
-  route <%= route %> unreachable;
-  <%- end -%>
-<%- end -%>
 <%- if config&.static_routes&.v4 -%>
-  # Static routes
   <%- Array(config&.static_routes&.v4).each do |route| -%>
   route <%= route %>;
   <%- end -%>
@@ -18,12 +11,6 @@ protocol static {
 protocol static {
   ipv6;
 
-<%- if config&.originations&.v6 -%>
-  # Originated routes
-  <%- Array(config&.originations&.v6).each do |route| -%>
-  route <%= route %> unreachable;
-  <%- end -%>
-<%- end -%>
 <%- if config&.static_routes&.v6 -%>
   <%- Array(config&.static_routes&.v6).each do |route| -%>
   route <%= route %>;
