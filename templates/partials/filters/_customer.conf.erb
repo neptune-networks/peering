@@ -7,12 +7,12 @@
         reject "prefix is not in IRR AS SET <%= session.irr %> - REJECTING ", net;
 
       <%- end -%>
-      <%- if session.allowed_prefixes&.public_send(session.protocol) -%>
+      <%- if session.allowed_prefixes&.public_send(session.protocol)&.any? -%>
       if !(net ~ PREFIX_WHITELIST_FOR_<%= session.asn %>_<%= session.protocol_number %>) then
         reject "prefix is not in prefix whitelist - REJECTING ", net;
 
-      <%- end -%>
       customer_import();
+      <%- end -%>
     <%- else -%>
       reject;
     <%- end -%>

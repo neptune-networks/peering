@@ -191,6 +191,11 @@ bgp:
         remote:
           v4: '203.0.113.220'
           v6: 'fd00:504:36:0:3:2:0'
+        allowed_prefixes:
+          v4:
+            - '192.0.2.0/24'
+          v6:
+            - '2001:db8::/32'
 
   peers:
     defaults:
