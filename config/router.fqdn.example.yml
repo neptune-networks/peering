@@ -185,7 +185,7 @@ bgp:
         # particular record and only allow those addresses from this session.
         # You'll need to periodically re-create this configuration in order to
         # keep these IRR records up to date.
-        irr: 'AS-NEPTUNE-NETWORKS'
+        irr: 'AS-GITHUB'
         # This is a quick way of disabling a BGP session.
         disabled: true
         remote:
