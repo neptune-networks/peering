@@ -18,6 +18,11 @@
     <%- end -%>
     };
 
+  <%- else -%>
+    import filter {
+      reject;
+    }
+
   <%- end -%>
     export filter {
       <%- if session.communities&.export -%>
