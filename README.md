@@ -1,6 +1,6 @@
 # Neptune Networks Peering Config
 
-This is the pipeline to build [Neptune Networks](https://neptunenetworks.org)' BGP peering configuration. Neptune uses BIRD `2.0.7` on all of its core customer routers and border routers. We rely on this pipeline to take templates and YAML and turn them into a BIRD configuration.
+This used to be the pipeline to build [Neptune Networks](https://neptunenetworks.org)' BGP peering configuration. At the time when this was in use, Neptune used BIRD `2.0.7` for its core customer routers and border routers. We relied on this pipeline to take templates and YAML and turn them into a BIRD configuration.
 
 This BGP configuration has been built to be agnostic to Neptune Networks and should work for you as well. An example configuration file can be seen in [`config/router.fqdn.example.yml`](config/router.fqdn.example.yml). Simply create a similar file with the relevant options to your network and execute the generation steps at the bottom of this README.
 
